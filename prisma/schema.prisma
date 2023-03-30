@@ -1,0 +1,64 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement()) @db.SmallInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name           String @unique
+  hashedPassword String
+
+  Feeding Feeding[]
+}
+
+model Feeding {
+  id        Int      @id @default(autoincrement()) @db.SmallInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  date   DateTime @default(now()) @db.Date
+  amount Int      @db.SmallInt
+
+  foodType   FoodType @relation(fields: [foodTypeId], references: [id])
+  foodTypeId Int      @db.SmallInt
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int      @db.SmallInt
+  basin      Basin    @relation(fields: [basinId], references: [id])
+  basinId    Int      @db.SmallInt
+}
+
+model FoodType {
+  id Int @id @db.SmallInt
+
+  name                String    @unique
+  densityInKgPerLiter Float
+  Feeding             Feeding[]
+}
+
+model Basin {
+  id Int @id @db.SmallInt
+
+  Feeding Feeding[]
+  stock   FishStock?
+}
+
+model FishStock {
+  id        Int      @id @default(autoincrement()) @db.SmallInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  date   DateTime @default(now()) @db.Date
+  amount Int      @db.SmallInt
+  price  Decimal  @default(0) @db.Money
+  isNew  Boolean
+
+  basin   Basin @relation(fields: [basinId], references: [id])
+  basinId Int   @unique
+}
